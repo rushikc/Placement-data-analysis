@@ -1,13 +1,25 @@
 import re
-import xlrd
-from docx import Document
-from docx.shared import Inches
-import matplotlib.pyplot as plt
-import shutil
 import itertools
 import threading
 import time
 import sys
+
+##extra libraries to install
+import xlrd
+from docx import Document
+from docx.shared import Inches
+import matplotlib.pyplot as plt
+import numpy as np
+import easygui
+
+
+
+# stname1 = input('enter placement status file name');
+# stname2 = input('enter cse student status file name');
+# stname1 = '1.xls'
+# stname2 = '2.xlsx'
+stname1 = easygui.fileopenbox("select placement status file name")
+stname2 = easygui.fileopenbox("select cse student status file name")
 
 
 done = False
@@ -24,11 +36,11 @@ def animate():
         stt += '*'
         sys.stdout.write(stt + c)
         sys.stdout.flush()
-        time.sleep(0.2)
+        time.sleep(0.4)
     sys.stdout.write('\rDone!     \n\n')
 
 t = threading.Thread(target=animate)
-t.start()
+
 
 
 # shutil.copy('empty.docx','companywise_ug.docx')
@@ -52,8 +64,11 @@ def salary_peocessing(salary_temp):
         if (salary_temp[i] == ''):
             salary_temp[i] = 'NULL'
 
+
+
     for i in range(salary_temp.__len__()):
-        st = salary_temp[i]
+        st = str(salary_temp[i])
+
         if (st != 'NULL'):
             st = st.upper()
             st = st.replace('RS', '')
@@ -67,54 +82,77 @@ def salary_peocessing(salary_temp):
             st = st.replace('/', '')
             st = st.replace('\\', '')
             st = st.replace('K', '000')
+            st = st.replace(' K', '000')
             x = st.split(" ")
+
+            st2 = st.replace(' ','')
+            st2 = st2.replace('.', '')
 
             while '' in x:
                 x.remove('')
+
+
+
 
             if 'UG' in x or 'PG' in x:
                 if 'LPA' in x:
                     for k3 in range(x.__len__()):
                         if (x[k3] == 'UG'):
                             while (1):
-                                k3 += 1
-                                if (x[k3] == 'LPA' and k3 < x.__len__()):
-                                    st = x[k3 - 1]
+                                if(k3 < x.__len__()-1):
+                                    k3 += 1
+                                    if (x[k3] == 'LPA'):
+                                        st = x[k3 - 1]
+                                        break
+                                else:
                                     break
+
 
                     for k3 in range(x.__len__()):
                         if (x[k3] == 'PG'):
                             while (1):
-                                k3 += 1
-                                if (x[k3] == 'LPA' and k3 < x.__len__()):
-                                    st = st + '/' + x[k3 - 1]
+                                if (k3 < x.__len__() -1):
+                                    k3 += 1
+                                    if (x[k3] == 'LPA'):
+                                        st = st + '/' + x[k3 - 1]
+                                        break
+                                else:
                                     break
+
 
                 else:
                     if 'PM' in x:
                         for k3 in range(x.__len__()):
                             if (x[k3] == 'UG'):
                                 while (1):
-                                    k3 += 1
-                                    if (x[k3] == 'PM' and k3 < x.__len__()):
-                                        st = x[k3 - 1]
-                                        num = int(st)
-                                        num = num * 12
-                                        num = num / 100000
-                                        st = str(round(num, 1))
+                                    if (k3 < x.__len__()-1):
+                                        k3 += 1
+                                        if (x[k3] == 'PM'):
+                                            st = x[k3 - 1]
+                                            num = int(st)
+                                            num = num * 12
+                                            num = num / 100000
+                                            st = str(round(num, 1))
+                                            break
+                                    else:
                                         break
+
                         for k3 in range(x.__len__()):
                             if (x[k3] == 'PG'):
                                 while (1):
-                                    k3 += 1
-                                    if (x[k3] == 'PM' and k3 < x.__len__()):
-                                        st1 = x[k3 - 1]
-                                        num = int(st1)
-                                        num = num * 12
-                                        num = num / 100000
-                                        st1 = str(round(num, 1))
-                                        st = st + '/' + st1
+                                    if (k3 < x.__len__()-1):
+                                        k3 += 1
+                                        if (x[k3] == 'PM'):
+                                            st1 = x[k3 - 1]
+                                            num = int(st1)
+                                            num = num * 12
+                                            num = num / 100000
+                                            st1 = str(round(num, 1))
+                                            st = st + '/' + st1
 
+                                            break
+
+                                    else:
                                         break
 
                 pass
@@ -134,28 +172,35 @@ def salary_peocessing(salary_temp):
                                 st = str(round(num, 1))
 
             salary_temp[i] = st
+        else:
+            st3 = str(comp_info[i]).upper()
+            if not st3.__contains__('TOTAL'):
+                sl = 'enter salary for comapny '+ str(comp_info[i])
+                sal2 = float(input(sl))
+                salary_temp[i] = sal2
+
 
     return salary_temp
 
 
 def salary_check(salary_temp):
     for i in range(salary_temp.__len__()):
-        s = salary_temp[i]
+        s = str(salary_temp[i])
         s = s.replace('.', '')
         s = s.replace('/', '')
-        if (((re.search('\D', s)) and s != 'NULL') or s.__len__() > 8):
+        if (((re.search('\D', s)) and s != '0'and s!=0 and s != 'NULL') or s.__len__() > 8):
             print(salary_temp[i])
             # print('It conatins non-readable string please convert it to standard form')
             # print('ex: if string has \'UG 25000 pm and PG 20000 PM\' then calculate LPA and insrt \'3/2.4\' ')
             # print('In above example 3 represent UG salry in LPA and 2.4 represent PG salary in LPA ')
-            print('Insert the proper string............')
+            print('Insert the proper salary in LPA............')
             st = input()
             salary_temp[i] = st
 
     return salary_temp
 
 
-wb = xlrd.open_workbook("2017_Placement_Data_CSE_Student_Wise.xlsx")
+wb = xlrd.open_workbook(str(stname2))
 sheet = wb.sheet_by_index(0)
 
 ind_usn = []
@@ -248,7 +293,7 @@ while 'NA11' in date1:
 #####################################################
 
 
-wb = xlrd.open_workbook("2017_PLACEMENT_STATUS.xls")
+wb = xlrd.open_workbook(str(stname1))
 sheet = wb.sheet_by_index(0)
 
 ind_comp = []
@@ -358,15 +403,19 @@ while 'NA11' in comp_info:
 salary_info = salary_peocessing(salary_info)
 salary_info = salary_check(salary_info)
 
+t.start()
+
+
 # print(comp_info)
 # print(cse_info)
 # print(mcse_info)
 # print(mcne_info)
 # print(total_info)
 # print(salary_info)
-# print(date_info)
+# print(comp_info)
 
 
+# t.start() #thread start for loading animation
 # 333333333333333333333333333333333333333333333333333333333
 
 # merging two table company and student to get salary column in student table
@@ -374,6 +423,7 @@ salary_info = salary_check(salary_info)
 
 
 salary1 = ['0' for i in range(student1.__len__())]
+comp1 = []
 comp1 = ['NULL' for i in range(student1.__len__())]
 usn_dict = {}
 
@@ -381,37 +431,119 @@ for i in range(student1.__len__()):
 
     st = placed1[i]
     st = str(st).upper()
+    flag = 0
 
     for j in range(comp_info.__len__()):
         st1 = str(comp_info[j]).upper()
         st1 = st1.replace(" ", '')
         st = st.replace(" ", '')
+        salary = 0
         if st.__contains__(st1) or st1.__contains__(st):
 
             # comp = comp_info[j]
-            sal1 = salary_info[j].split('/')
+            sal1 = str(salary_info[j]).split('/')
             if (sal1[0] != 'NULL'):
                 if (usn1[1].__contains__('SCN') or usn1[i].__contains__('SCS') and sal1.__len__() == 2):
 
                     salary = float(sal1[1])
                 else:
                     salary = float(sal1[0])
-            else:
-                salary = 0
+
+
             salary1[i] = salary
-            comp1[i] = comp_info[j]
+            temp =comp_info[j]
+            comp1[i] = temp
+            # j = comp_info.__len__()
+
+    #
+    # if (salary == 0):
+    #     nm = 'Enter salary of ' + placed1[i]
+    #     salary = float(input(nm))
+    #     salary1[i] = salary
+    #     comp1[i] = placed1[i]
+    #     comp_info.append(placed1[i])
+    #     salary_info.append(salary)
+
+
+
+
+
+
 
         # else:
         #     comp = closest(comp_info, st)
         #     if (comp != ''):
-        # 
+        #
         #         for k1 in range(comp_info.__len__()):
         #             if (comp_info[k1] == comp):
         #                 salary = salary_info[k1]
-        #                 comp1 = st + ' algo'
+        #                 comp1[k1] = st
 
-# to remove duplicate usn
+
+
+
+
+###sorting all list based on usn
+
+
+
+usn_ind = ['0' for i in range(usn1.__len__())]
+
+for i in range(usn1.__len__()):
+    st = usn1[i]
+    if(st.__contains__('SCS') or st.__contains__('SCN')):
+        usn_ind[i] = int((usn1[i][usn1[i].__len__()-2:]))
+    else:
+        usn_ind[i] = int((usn1[i][usn1[i].__len__() - 3:]))
+
+
+
+usn1 = np.array(usn1)
+comp1 = np.array(comp1)
+salary1 = np.array(salary1)
+student1 = np.array(student1)
+deg1 = np.array(deg1)
+major1 = np.array(major1)
+placed1 = np.array(placed1)
+date1 = np.array(date1)
+
+
+usn_ind = np.array(usn_ind)
+ind = usn_ind.argsort()
+
+usn1 = usn1[ind]
+comp1 = comp1[ind]
+salary1 = salary1[ind]
+student1 = student1[ind]
+deg1 = deg1[ind]
+major1 = major1[ind]
+placed1 = placed1[ind]
+date1 = date1[ind]
+
+
+usn1 = np.array(usn1).tolist()
+comp1 = np.array(comp1).tolist()
+salary1 = np.array(salary1).tolist()
+student1 = np.array(student1).tolist()
+deg1 = np.array(deg1).tolist()
+major1 = np.array(major1).tolist()
+placed1 = np.array(placed1).tolist()
+date1 = np.array(date1).tolist()
+
+#
+# print(usn1)
+# print(comp1)
+# print(salary1.__len__())
+# print(student1.__len__())
+# print(deg1.__len__())
+# print(major1.__len__())
+# print(placed1.__len__())
+# print(date1.__len__())
+
+########## to remove duplicate usn
 index_dict = {}
+
+# salary1 = salary_check(salary1)
 
 for i in range(salary1.__len__()):
     if not (isinstance(salary1[i],int) or isinstance(salary1[i],float) ):
@@ -425,7 +557,6 @@ for i in range(usn1.__len__()):
 for i in range(usn1.__len__()):
     usn_dict[usn1[i]].append(salary1[i])
     index_dict[usn1[i]].append(i)
-
 #33333333333333333333333333333333333333333333333333333333333
 #student details with company name and salary(unique usn) PG
 
@@ -489,26 +620,53 @@ for i in range(student1.__len__()):
 p2 = document.add_paragraph()
 p2.add_run('\n')
 
-str1 = 'Minimum Salary : ' + str(min(salary1)) + ' LPA'
-str1 = str(str1)
-p2.add_run(str1)
-p2.add_run('\n')
+pg_sal=[]
+ug_sal=[]
+for i in range(salary1.__len__()):
+    cl = usn1[i]
+    cl = str(cl).upper()
+    if(cl.__contains__('SCS') or cl.__contains__('SCN')):
+        pg_sal.append(salary1[i])
+    else:
+        ug_sal.append(salary1[i])
 
-str1 = 'Maximum Salary : ' + str(max(salary1)) + ' LPA'
-str1 = str(str1)
-p2.add_run(str1)
-p2.add_run('\n')
 
-# salary_temp = salary1.copy()
-salary_temp.sort()
 
-ls = salary_temp.__len__()
+
+# print(salary_temp)
+# print(salary1)
+# print(comp1)
+# print(student1)
+# print(usn1)
+while 0 in pg_sal:
+    pg_sal.remove(0)
+
+while 0 in ug_sal:
+    ug_sal.remove(0)
+
+
+ls = pg_sal.__len__()
 avg_sal = 0
-num = 0
-for i in range(int(ls - ls*0.75),int(ls - ls*0.25)):
-    avg_sal+=salary_temp[i]
+num = 1
+for i in range(int(ls - ls*0.9),int(ls - ls*0.1)):
+    avg_sal+=pg_sal[i]
     num +=1
 avg_sal = avg_sal/num
+
+
+str1 = 'Minimum Salary : ' + str(min(pg_sal)) + ' LPA'
+str1 = str(str1)
+p2.add_run(str1)
+p2.add_run('\n')
+
+str1 = 'Maximum Salary : ' + str(max(pg_sal)) + ' LPA'
+str1 = str(str1)
+p2.add_run(str1)
+p2.add_run('\n')
+
+
+
+# print(avg_sal)
 
 str1 = 'Average Salary : ' + str(round(avg_sal,2)) + ' LPA'
 str1 = str(str1)
@@ -581,27 +739,32 @@ for i in range(student1.__len__()):
 p2 = document.add_paragraph()
 p2.add_run('\n')
 
-str1 = 'Minimum Salary : ' + str(min(salary1)) + ' LPA'
+str1 = 'Minimum Salary : ' + str(min(ug_sal)) + ' LPA'
 str1 = str(str1)
 p2.add_run(str1)
 p2.add_run('\n')
 
 
-str1 = 'Maximum Salary : ' + str(max(salary1)) + ' LPA'
+str1 = 'Maximum Salary : ' + str(max(ug_sal)) + ' LPA'
 str1 = str(str1)
 p2.add_run(str1)
 p2.add_run('\n')
 
-# salary_temp = salary1.copy()
-salary_temp.sort()
 
-ls = salary_temp.__len__()
+
+
+ls = ug_sal.__len__()
 avg_sal = 0
-num = 0
-for i in range(int(ls - ls * 0.75), int(ls - ls * 0.25)):
-    avg_sal += salary_temp[i]
+num = 1
+for i in range(int(ls - ls * 0.9), int(ls - ls * 0.1)):
+    avg_sal += ug_sal[i]
     num += 1
 avg_sal = avg_sal / num
+
+# print(avg_sal)
+
+
+
 
 str1 = 'Average Salary : ' + str(round(avg_sal,2)) + ' LPA'
 str1 = str(str1)
@@ -858,9 +1021,9 @@ document.save('companywise_pg.docx')
 #plt.pie(cse_info1, labels=cse_comp,autopct='%1.1f%%', shadow=True, startangle=140)
 fig=plt.figure(figsize=(16,9))
 plt.bar(pg_comp, pg_num)
-plt.xticks(rotation=90)
-#plt.xticks(np.arange(0,len(mcse_info1) ,1),rotation = 90)
-#plt.yticks(np.arange(0,max(mcse_info1)+1 ,1))
+#plt.xticks(rotation=90)
+plt.xticks(np.arange(0,pg_comp.__len__() ,1),rotation = 90)
+plt.yticks(np.arange(0,max(pg_num)+1 ,1))
 #plt.show()
 #fig.set_size_inches(18.5, 10.5)
 fig.savefig('pg_comp_graph.png', bbox_inches='tight')
@@ -972,9 +1135,9 @@ document.save('companywise_ug.docx')
 #plt.pie(cse_info1, labels=cse_comp,autopct='%1.1f%%', shadow=True, startangle=140)
 fig=plt.figure(figsize=(16,9))
 plt.bar(ug_comp, ug_num)
-plt.xticks(rotation=90)
-#plt.xticks(np.arange(0,len(mcse_info1) ,1),rotation = 90)
-#plt.yticks(np.arange(0,max(mcse_info1)+1 ,1))
+#plt.xticks(rotation=90)
+plt.xticks(np.arange(0,ug_comp.__len__() ,1),rotation = 90)
+plt.yticks(np.arange(0,max(ug_num)+1 ,1))
 #plt.show()
 #fig.set_size_inches(18.5, 10.5)
 fig.savefig('ug_comp_graph.png', bbox_inches='tight')
