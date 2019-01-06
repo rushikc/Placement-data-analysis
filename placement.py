@@ -16,7 +16,7 @@ import easygui
 
 # stname1 = input('enter placement status file name');
 # stname2 = input('enter cse student status file name');
-# stname1 = '1.xls'
+# stname1 = '1.xlsx'
 # stname2 = '2.xlsx'
 stname1 = easygui.fileopenbox("select placement status file name")
 stname2 = easygui.fileopenbox("select cse student status file name")
@@ -482,7 +482,6 @@ for i in range(student1.__len__()):
 
 
 
-
 ###sorting all list based on usn
 
 
@@ -530,10 +529,17 @@ major1 = np.array(major1).tolist()
 placed1 = np.array(placed1).tolist()
 date1 = np.array(date1).tolist()
 
+
+for i in range(salary1.__len__()):
+    try:
+        salary1[i] = float(salary1[i])
+    except:
+        salary1[i] = 0
+
 #
 # print(usn1)
 # print(comp1)
-# print(salary1.__len__())
+# print(salary1)
 # print(student1.__len__())
 # print(deg1.__len__())
 # print(major1.__len__())
@@ -557,6 +563,7 @@ for i in range(usn1.__len__()):
 for i in range(usn1.__len__()):
     usn_dict[usn1[i]].append(salary1[i])
     index_dict[usn1[i]].append(i)
+
 #33333333333333333333333333333333333333333333333333333333333
 #student details with company name and salary(unique usn) PG
 
@@ -622,6 +629,9 @@ p2.add_run('\n')
 
 pg_sal=[]
 ug_sal=[]
+
+# print(usn1)
+# print(salary1)
 for i in range(salary1.__len__()):
     cl = usn1[i]
     cl = str(cl).upper()
@@ -630,7 +640,9 @@ for i in range(salary1.__len__()):
     else:
         ug_sal.append(salary1[i])
 
-
+# print(pg_sal)
+# print(ug_sal)
+# exit()
 
 
 # print(salary_temp)
@@ -964,7 +976,14 @@ for i in range(comp_info.__len__()):
         row_cells[1].text = comp_info[i]
         row_cells[2].text = str(mcse_info[i])
         row_cells[3].text = str(mcne_info[i])
-        row_cells[4].text = str(salary_info[i]) + ' LPA'
+        sal1 = ''
+        sal1 = salary_info[i]
+        sal1 = str(sal1)
+        if sal1.__contains__('/'):
+            sal1 = sal1.split('/')
+            row_cells[4].text = str(sal1[1]) + ' LPA'
+        else:
+            row_cells[4].text = str(sal1) + ' LPA'
 
         if not (isinstance(mcse_info[i],int) or isinstance(salary1[i],float)) :
             mcse_info[i] = 0
@@ -1084,7 +1103,15 @@ for i in range(comp_info.__len__()):
         row_cells[1].text = comp_info[i]
         row_cells[2].text = str(cse_info[i])
         # row_cells[3].text = str(mcne_info[i])
-        row_cells[3].text = str(salary_info[i]) + ' LPA'
+        sal1 = ''
+        sal1 = salary_info[i]
+        sal1 = str(sal1)
+        if sal1.__contains__('/'):
+            sal1 = sal1.split('/')
+            row_cells[3].text = str(sal1[0]) + ' LPA'
+        else:
+            row_cells[3].text = str(sal1) + ' LPA'
+
         if not ( isinstance(cse_info[i],int) or isinstance(salary1[i],float) ):
             cse_info[i] = 0
         ug_comp.append(str(comp_info[i]))
